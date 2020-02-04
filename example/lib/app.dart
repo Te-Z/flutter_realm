@@ -4,6 +4,7 @@ import 'fetch_widget.dart';
 import 'helpers/local_realm_provider.dart';
 import 'subscription_widget.dart';
 import 'sync/sync.dart';
+import 'package:flutter_realm/flutter_realm.dart';
 
 class MyApp extends StatelessWidget {
   @override
@@ -50,6 +51,18 @@ class Home extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Tests'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.power_settings_new),
+            onPressed: () async {
+              final users = await SyncUser.allUsers();
+              for (SyncUser user in users) {
+                await user.logOut();
+              }
+              print("Home: _logOut");
+            },
+          )
+        ],
       ),
       body: ListView(
         children: <Widget>[

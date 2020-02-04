@@ -42,20 +42,28 @@ class _SignIn extends StatefulWidget {
 class _SignInState extends State<_SignIn> {
   final form = GlobalKey<FormState>();
 
-  String serverUrl = "[YOUR REALM URL]";
+  String serverUrl;
   String username;
   String password;
 
-  List<String> lol = [];
-
   @override
   Widget build(BuildContext context) {
-    var loz = lol.isNotEmpty;
     return Form(
       key: form,
       child: ListView(
         padding: EdgeInsets.all(16),
         children: <Widget>[
+          TextFormField(
+            key: Key('instance_link'),
+            decoration: InputDecoration(labelText: 'Instance link'),
+            validator: (text) {
+              if (text.startsWith('http') || text.startsWith('realm')) {
+                return 'Enter server host without http(s)/realm';
+              }
+              return null;
+            },
+            onSaved: (text) => serverUrl = text,
+          ),
           TextFormField(
             key: Key('username'),
             decoration: InputDecoration(labelText: 'Username'),
@@ -92,7 +100,7 @@ class _SignInState extends State<_SignIn> {
     }
     form.currentState.save();
     final authUrl = 'https://$serverUrl';
-    final syncServerUrl = 'realms://$serverUrl/~/products';
+    final syncServerUrl = 'realms://$serverUrl/~/global';
 
     final creds = UsernamePasswordAuthProvider.getCredentials(
       username: username,
@@ -101,24 +109,20 @@ class _SignInState extends State<_SignIn> {
     );
 
     try {
-      print("==> 1");
       await SyncUser.logInWithCredentials(
         credentials: creds,
         authServerURL: authUrl,
         isAnonymous: isAnonymous
       );
 
-      print("==> 2");
       final realm = await Realm.asyncOpenWithConfiguration(
         syncServerURL: syncServerUrl,
         fullSynchronization: true,
       );
 
-      print("==> 3");
       widget.onRealm(realm);
     } catch (ex) {
       final bar = SnackBar(content: Text(ex.toString()));
-      print("_onSignIn: Exception ====> $ex");
       Scaffold.of(context).showSnackBar(bar);
     }
   }
