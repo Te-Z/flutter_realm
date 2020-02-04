@@ -12,6 +12,7 @@ class SyncUser {
   static Future<SyncUser> logInWithCredentials({
     @required SyncCredentials credentials,
     @required String authServerURL,
+    bool isAnonymous = false
   }) async {
     final user = await _realmMethodChannel.invokeMethod<Map>(
       'logInWithCredentials',
@@ -19,6 +20,7 @@ class SyncUser {
         'data': credentials._data,
         'provider': credentials._provider,
         'authServerURL': authServerURL,
+        'isAnonymous': isAnonymous
       },
     );
 

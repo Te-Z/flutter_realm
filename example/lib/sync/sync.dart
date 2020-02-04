@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_realm/flutter_realm.dart';
-import 'package:flutter_realm_example/subscription_widget.dart';
+
+import '../subscription_widget.dart';
 
 class SyncWidget extends StatefulWidget {
   @override
@@ -41,28 +42,20 @@ class _SignIn extends StatefulWidget {
 class _SignInState extends State<_SignIn> {
   final form = GlobalKey<FormState>();
 
-  String serverUrl;
+  String serverUrl = "[YOUR REALM URL]";
   String username;
   String password;
 
+  List<String> lol = [];
+
   @override
   Widget build(BuildContext context) {
+    var loz = lol.isNotEmpty;
     return Form(
       key: form,
       child: ListView(
         padding: EdgeInsets.all(16),
         children: <Widget>[
-          TextFormField(
-            key: Key('instance_link'),
-            decoration: InputDecoration(labelText: 'Instance link'),
-            validator: (text) {
-              if (text.startsWith('http') || text.startsWith('realm')) {
-                return 'Enter server host without http(s)/realm';
-              }
-              return null;
-            },
-            onSaved: (text) => serverUrl = text,
-          ),
           TextFormField(
             key: Key('username'),
             decoration: InputDecoration(labelText: 'Username'),
@@ -83,12 +76,17 @@ class _SignInState extends State<_SignIn> {
             child: Text('Sign In'),
             onPressed: () => _onSignIn(false),
           ),
+          RaisedButton(
+            key: Key('anonymous'),
+            child: Text('Sign In as Anonymous'),
+            onPressed: () => _onSignIn(false, isAnonymous: true),
+          ),
         ],
       ),
     );
   }
 
-  Future<void> _onSignIn(bool shouldRegister) async {
+  Future<void> _onSignIn(bool shouldRegister, {bool isAnonymous = false}) async {
     if (!form.currentState.validate()) {
       return;
     }
@@ -103,19 +101,24 @@ class _SignInState extends State<_SignIn> {
     );
 
     try {
+      print("==> 1");
       await SyncUser.logInWithCredentials(
         credentials: creds,
         authServerURL: authUrl,
+        isAnonymous: isAnonymous
       );
 
+      print("==> 2");
       final realm = await Realm.asyncOpenWithConfiguration(
         syncServerURL: syncServerUrl,
         fullSynchronization: true,
       );
 
+      print("==> 3");
       widget.onRealm(realm);
     } catch (ex) {
       final bar = SnackBar(content: Text(ex.toString()));
+      print("_onSignIn: Exception ====> $ex");
       Scaffold.of(context).showSnackBar(bar);
     }
   }

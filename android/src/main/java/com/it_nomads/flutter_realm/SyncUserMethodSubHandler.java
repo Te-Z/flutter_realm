@@ -1,6 +1,8 @@
 package com.it_nomads.flutter_realm;
 
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,7 +69,17 @@ public class SyncUserMethodSubHandler implements MethodSubHandler {
     }
 
     private void onLogInWithCredentials(Map arguments, final MethodChannel.Result result) {
-        SyncCredentials credentials = credentialsFromArguments(arguments);
+
+        Boolean isAnonymous = (Boolean) arguments.get("isAnonymous");
+
+        SyncCredentials credentials;
+
+        if(isAnonymous != null && isAnonymous){
+            credentials = SyncCredentials.anonymous();
+        } else {
+            credentials = credentialsFromArguments(arguments);
+        }
+
         if (credentials == null) {
             String message = "Provider is not supported for authorization. Received: " + arguments.toString();
             result.error(message, null, null);
